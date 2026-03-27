@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "LeetFocus",
+  "version": "1.0.0",
+  "description": "Stay focused. Solve your daily LeetCode problem.",
+
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "http://localhost:5173/*",
+    "https://leetcode.com/problems/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "LeetFocus"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["http://localhost:5173/*"],
+      "js": ["content_scripts/clerk_bridge.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["content_scripts/leetcode_checker.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
