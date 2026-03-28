@@ -1,14 +1,20 @@
 import os
 
 import jwt
-import requests
-from django.core.cache import cache
-from jwt.algorithms import RSAAlgorithm
+from jwt import PyJWKClient
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-CLERK_FRONTEND_API_URL = os.environ.get("CLERK_API_FRONTEND_URL", "")
-CACHE_KEY = "jwks_data"
+_jwks_client = None
+
+
+def _get_jwks_client():
+    global _jwks_client
+    if _jwks_client is None:
+        clerk_api_url = os.environ.get("CLERK_API_FRONTEND_URL", "")
+        jwks_url = f"{clerk_api_url}/.well-known/jwks.json"
+        _jwks_client = PyJWKClient(jwks_url, cache_keys=True)
+    return _jwks_client
 
 
 class ClerkUser:
@@ -39,28 +45,18 @@ class JWTAuthenticationMiddleware(BaseAuthentication):
         return ClerkUser(clerk_id, email), None
 
     def _decode_jwt(self, token):
-        jwks_data = self._get_jwks()
-        public_key = RSAAlgorithm.from_jwk(jwks_data["keys"][0])
         try:
+            client = _get_jwks_client()
+            signing_key = client.get_signing_key_from_jwt(token)
             return jwt.decode(
                 token,
-                public_key,
+                signing_key.key,
                 algorithms=["RS256"],
-                options={"verify_signature": True},
+                options={"require": ["sub", "exp"]},
             )
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed("Token has expired.")
         except jwt.DecodeError:
             raise AuthenticationFailed("Token decode error.")
-        except jwt.InvalidTokenError:
-            raise AuthenticationFailed("Invalid token.")
-
-    def _get_jwks(self):
-        jwks_data = cache.get(CACHE_KEY)
-        if not jwks_data:
-            response = requests.get(f"{CLERK_FRONTEND_API_URL}/.well-known/jwks.json")
-            if response.status_code != 200:
-                raise AuthenticationFailed("Failed to fetch JWKS.")
-            jwks_data = response.json()
-            cache.set(CACHE_KEY, jwks_data)
-        return jwks_data
+        except jwt.InvalidTokenError as exc:
+            raise AuthenticationFailed(f"Invalid token: {exc}")
