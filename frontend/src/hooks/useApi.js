@@ -11,9 +11,7 @@ export function useApi() {
     const client = axios.create({ baseURL: BASE_URL });
 
     client.interceptors.request.use(async (config) => {
-      const token =
-        (await getToken({ template: "problem-solving-template" })) ??
-        (await getToken());
+      const token = await getToken();
       if (token) config.headers.Authorization = `Bearer ${token}`;
       return config;
     });

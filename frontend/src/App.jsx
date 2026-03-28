@@ -18,7 +18,7 @@ function ExtensionBridge() {
     if (!isLoaded || !isSignedIn) return;
 
     async function postToken() {
-      const token = await getToken({ template: "problem-solving-template" });
+      const token = await getToken();
       if (token) {
         window.postMessage({ type: "__LEETFOCUS_TOKEN__", token }, "*");
       }
