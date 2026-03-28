@@ -98,7 +98,7 @@ REST_FRAMEWORK = {
 # CORS — allow the frontend and Chrome extension origins
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://localhost:3000',
+    'https://leet-focus.vercel.app,http://localhost:5173,http://localhost:3000',
 ).split(',')
 
 CORS_ALLOW_HEADERS = [

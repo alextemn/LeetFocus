@@ -50,8 +50,8 @@ async function handleNewToken(token) {
 
 function isAllowedUrl(url, potdUrl) {
   return (
-    url.startsWith("http://localhost:5173") ||
-    url.startsWith("http://localhost:8000") ||
+    url.startsWith("https://leet-focus.vercel.app") ||
+    url.startsWith("https://leetfocus-production.up.railway.app") ||
     url.startsWith(potdUrl)
   );
 }

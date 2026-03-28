@@ -10,8 +10,8 @@
   ],
 
   "host_permissions": [
-    "http://localhost:8000/*",
-    "http://localhost:5173/*",
+    "https://leetfocus-production.up.railway.app/*",
+    "https://leet-focus.vercel.app/*",
     "https://leetcode.com/problems/*"
   ],
 
@@ -27,7 +27,7 @@
 
   "content_scripts": [
     {
-      "matches": ["http://localhost:5173/*"],
+      "matches": ["https://leet-focus.vercel.app/*"],
       "js": ["content_scripts/clerk_bridge.js"],
       "run_at": "document_idle"
     },
