@@ -102,6 +102,11 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
     'https://leet-focus.vercel.app,http://localhost:5173,http://localhost:3000',
 ).split(',')
 
+# Allow all Vercel preview deployment URLs for this project
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://leet-focus.*\.vercel\.app$",
+]
+
 CORS_ALLOW_HEADERS = [
     'accept',
     'authorization',
