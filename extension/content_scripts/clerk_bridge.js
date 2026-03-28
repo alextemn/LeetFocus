@@ -13,6 +13,8 @@ window.addEventListener("message", (event) => {
   if (event.data?.type !== "__LEETFOCUS_TOKEN__") return;
   const token = event.data.token;
   if (token) {
-    chrome.runtime.sendMessage({ type: "CLERK_TOKEN", token });
+    chrome.runtime.sendMessage({ type: "CLERK_TOKEN", token }, () => {
+      void chrome.runtime.lastError;
+    });
   }
 });
