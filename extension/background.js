@@ -49,6 +49,12 @@ async function handleNewToken(token) {
 }
 
 function isAllowedUrl(url, potdUrl) {
+  try {
+    const { hostname } = new URL(url);
+    if (hostname === "google.com" || hostname.endsWith(".google.com")) return true;
+  } catch {
+    // ignore invalid URLs
+  }
   return (
     url.startsWith("https://leet-focus.vercel.app") ||
     url.startsWith("https://leetfocus-production.up.railway.app") ||

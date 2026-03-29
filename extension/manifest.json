@@ -12,7 +12,8 @@
   "host_permissions": [
     "https://leetfocus-production.up.railway.app/*",
     "https://leet-focus.vercel.app/*",
-    "https://leetcode.com/problems/*"
+    "https://leetcode.com/problems/*",
+    "*://*.google.com/*"
   ],
 
   "background": {
