@@ -14,6 +14,9 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 _allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = _allowed_hosts_env.split(',') if _allowed_hosts_env else ['*']
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
