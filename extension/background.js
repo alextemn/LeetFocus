@@ -56,7 +56,7 @@ function isAllowedUrl(url, potdUrl) {
     // ignore invalid URLs
   }
   return (
-    url.startsWith("https://leet-focus.vercel.app") ||
+    url.startsWith("https://leetfocus.com") ||
     url.startsWith("https://leetfocus-production.up.railway.app") ||
     url.startsWith(potdUrl)
   );

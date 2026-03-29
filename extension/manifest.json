@@ -11,7 +11,7 @@
 
   "host_permissions": [
     "https://leetfocus-production.up.railway.app/*",
-    "https://leet-focus.vercel.app/*",
+    "https://leetfocus.com/*",
     "https://leetcode.com/problems/*",
     "*://*.google.com/*"
   ],
@@ -28,7 +28,7 @@
 
   "content_scripts": [
     {
-      "matches": ["https://leet-focus.vercel.app/*"],
+      "matches": ["https://leetfocus.com/*"],
       "js": ["content_scripts/clerk_bridge.js"],
       "run_at": "document_idle"
     },

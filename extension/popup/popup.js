@@ -58,7 +58,7 @@ function screenSignIn(note = null) {
     className: "btn-primary",
     style: { marginTop: "4px" },
     onClick: () => {
-      chrome.tabs.create({ url: "https://leet-focus.vercel.app/dashboard" });
+      chrome.tabs.create({ url: "https://leetfocus.com/dashboard" });
     },
   }, "open leet focus →");
   s.appendChild(openBtn);
