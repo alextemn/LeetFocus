@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useApi } from "./hooks/useApi";
 import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Settings from "./pages/Settings";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
@@ -95,6 +96,7 @@ export default function App() {
           path="/settings"
           element={<ProtectedRoute><Settings /></ProtectedRoute>}
         />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
