@@ -38,3 +38,7 @@ export async function fetchProfile(token) {
 export async function verifyTodaySolved(token) {
   return request("/today/verify/", token, { method: "POST" });
 }
+
+export async function assignTodayProblem(token) {
+  return request("/today/assign/", token, { method: "POST" });
+}

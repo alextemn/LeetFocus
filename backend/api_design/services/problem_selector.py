@@ -53,6 +53,14 @@ def is_day_fully_solved(user, today):
     return not problems.filter(solved=False).exists()
 
 
+def get_daily_problem(user):
+    """Return today's primary DailyProblem if already assigned, else None."""
+    today = date.today()
+    return DailyProblem.objects.filter(
+        user=user, assigned_date=today, is_punishment=False
+    ).first()
+
+
 def get_or_assign_daily_problem(user):
     """
     Return today's primary DailyProblem for the user, creating one if needed.

@@ -31,6 +31,14 @@ async function fetchAndCachePotd(token) {
   try {
     const problem = await fetchTodayProblem(token);
     const today = new Date().toISOString().slice(0, 10);
+    if (problem.assigned === false) {
+      await chrome.storage.local.set({
+        lf_today_problem_url: null,
+        lf_today_solved: false,
+        lf_today_date: today,
+      });
+      return;
+    }
     await chrome.storage.local.set({
       lf_today_problem_url: problem.problem_url,
       lf_today_solved: problem.solved,
@@ -57,6 +65,7 @@ function isAllowedUrl(url, potdUrl) {
   }
   return (
     url.startsWith("https://leetfocus.com") ||
+    url.startsWith("https://www.leetfocus.com") ||
     url.startsWith("https://leetfocus-production.up.railway.app") ||
     url.startsWith(potdUrl)
   );

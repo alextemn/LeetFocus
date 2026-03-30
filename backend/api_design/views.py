@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from .models import DailyProblem, UserProfile
 from .serializers import DailyProblemSerializer, UserProfileSerializer
 from .services.leetcode_checker import mark_solved
-from .services.problem_selector import get_or_assign_daily_problem, is_day_fully_solved
+from .services.problem_selector import get_daily_problem, get_or_assign_daily_problem, is_day_fully_solved
 
 
 class AuthTestView(APIView):
@@ -90,6 +90,15 @@ class ProfileView(APIView):
 class TodayProblemView(APIView):
     def get(self, request):
         profile = _get_or_create_profile(request)
+        daily = get_daily_problem(profile)
+        if daily is None:
+            return Response({'assigned': False})
+        return Response(DailyProblemSerializer(daily).data)
+
+
+class TodayAssignView(APIView):
+    def post(self, request):
+        profile = _get_or_create_profile(request)
         daily = get_or_assign_daily_problem(profile)
         if daily is None:
             return Response(
@@ -109,12 +118,18 @@ class TodayStatusView(APIView):
             reset_skips_if_needed(profile)
             profile.refresh_from_db()
 
-        primary = get_or_assign_daily_problem(profile)
+        primary = get_daily_problem(profile)
+
         if primary is None:
-            return Response(
-                {'error': 'No problems available in the pool.'},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
+            return Response({
+                'assigned': False,
+                'primary': None,
+                'punishment': None,
+                'is_punishment_day': False,
+                'day_fully_solved': False,
+                'current_streak': profile.current_streak if profile.is_premium else None,
+                'skips_remaining': profile.skips_remaining if profile.is_premium else None,
+            })
 
         punishment = DailyProblem.objects.filter(
             user=profile, assigned_date=today, is_punishment=True
@@ -123,6 +138,7 @@ class TodayStatusView(APIView):
         day_fully_solved = is_day_fully_solved(profile, today)
 
         return Response({
+            'assigned': True,
             'primary': DailyProblemSerializer(primary).data,
             'punishment': DailyProblemSerializer(punishment).data if punishment else None,
             'is_punishment_day': punishment is not None,

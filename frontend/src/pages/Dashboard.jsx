@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [verifying, setVerifying] = useState(false);
   const [changing, setChanging] = useState(false);
   const [skipping, setSkipping] = useState(false);
+  const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState(null);
   const timerStart = useRef(0);
 
@@ -103,6 +104,26 @@ export default function Dashboard() {
       setError(e?.response?.data?.error ?? "Could not mark as solved.");
     } finally {
       setVerifying(false);
+    }
+  }
+
+  async function handleAssign() {
+    setAssigning(true);
+    setError(null);
+    try {
+      await api.post("/today/assign/");
+      const statusRes = await api.get("/today/status/");
+      const s = statusRes.data;
+      setPrimary(s.primary);
+      setPunishment(s.punishment);
+      setIsPunishmentDay(s.is_punishment_day);
+      setDayFullySolved(s.day_fully_solved);
+      setCurrentStreak(s.current_streak);
+      setSkipsRemaining(s.skips_remaining);
+    } catch (e) {
+      setError(e?.response?.data?.error ?? "Could not assign problem.");
+    } finally {
+      setAssigning(false);
     }
   }
 
@@ -213,8 +234,17 @@ export default function Dashboard() {
               )}
             </>
           ) : (
-            <div style={{ background: C.elevated, borderRadius: 6, padding: "18px 20px", fontFamily: MONO, fontSize: 12, color: C.textMuted }}>
-              No problem assigned yet.
+            <div style={{ background: C.elevated, borderRadius: 6, padding: "24px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ fontFamily: MONO, fontSize: 11, color: C.textSecondary }}>
+                no problem assigned — your browser is unlocked
+              </div>
+              <button
+                onClick={handleAssign}
+                disabled={assigning}
+                style={{ alignSelf: "flex-start", fontFamily: MONO, fontSize: 11, color: C.void, background: C.steel, border: "none", borderRadius: 4, padding: "8px 16px", cursor: assigning ? "default" : "pointer", opacity: assigning ? 0.6 : 1 }}
+              >
+                {assigning ? "assigning..." : "assign problem"}
+              </button>
             </div>
           )}
         </div>

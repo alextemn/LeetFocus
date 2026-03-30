@@ -10,7 +10,7 @@
  */
 
 import { getToken, clearToken } from "../utils/auth.js";
-import { fetchTodayProblem, fetchProfile } from "../utils/api.js";
+import { fetchTodayProblem, fetchProfile, assignTodayProblem } from "../utils/api.js";
 
 const app = document.getElementById("app");
 
@@ -140,6 +140,39 @@ function screenMain({ problem, profile, solved }) {
   return s;
 }
 
+function screenNoAssignment({ profile, token }) {
+  const s = el("div", { className: "screen", id: "screen-no-assignment" });
+
+  const topBar = el("div", { className: "top-bar" });
+  topBar.appendChild(el("div", { className: "brand" }, "leetfocus"));
+  topBar.appendChild(el("div", { className: "user-email" }, profile?.email ?? ""));
+  s.appendChild(topBar);
+
+  s.appendChild(el("div", { className: "subtext" }, "no problem assigned — your browser is unlocked"));
+
+  const assignBtn = el("button", {
+    className: "btn-primary",
+    style: { marginTop: "12px" },
+    onClick: async () => {
+      assignBtn.disabled = true;
+      assignBtn.textContent = "assigning...";
+      try {
+        await assignTodayProblem(token);
+        await loadMain(token);
+      } catch (err) {
+        render(screenError(err.message ?? "Could not assign problem."));
+      }
+    },
+  }, "assign problem");
+  s.appendChild(assignBtn);
+
+  const footer = el("div", { className: "footer" });
+  footer.appendChild(el("button", { className: "btn-ghost", onClick: handleSignOut }, "sign out"));
+  s.appendChild(footer);
+
+  return s;
+}
+
 function screenError(message) {
   const s = el("div", { className: "screen", id: "screen-signin" });
   s.appendChild(el("div", { className: "brand" }, "leetfocus"));
@@ -170,6 +203,11 @@ async function loadMain(token) {
       fetchProfile(token),
     ]);
     const today = new Date().toISOString().slice(0, 10);
+    if (problem.assigned === false) {
+      chrome.storage.local.set({ lf_today_problem_url: null, lf_today_solved: false, lf_today_date: today });
+      render(screenNoAssignment({ profile, token }));
+      return;
+    }
     chrome.storage.local.set({
       lf_today_problem_url: problem.problem_url,
       lf_today_solved: problem.solved,

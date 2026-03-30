@@ -12,6 +12,7 @@
   "host_permissions": [
     "https://leetfocus-production.up.railway.app/*",
     "https://leetfocus.com/*",
+    "https://www.leetfocus.com/*",
     "https://leetcode.com/problems/*",
     "*://*.google.com/*"
   ],
@@ -28,7 +29,7 @@
 
   "content_scripts": [
     {
-      "matches": ["https://leetfocus.com/*"],
+      "matches": ["https://leetfocus.com/*", "https://www.leetfocus.com/*"],
       "js": ["content_scripts/clerk_bridge.js"],
       "run_at": "document_idle"
     },
