@@ -48,15 +48,22 @@ export async function getToken() {
   // Treat as expired if within 30 seconds of expiry
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (expiry && nowSeconds >= expiry - 30) {
-    await clearToken();
-    return null;
+    return null; // expired — caller decides whether to clear
   }
 
   return token;
 }
 
 /**
- * Remove the stored token (sign-out).
+ * Remove only the JWT (e.g. when it has expired and needs refreshing).
+ * Preserves the 10-hour session so lock enforcement continues.
+ */
+export async function clearJwt() {
+  await chrome.storage.local.remove([TOKEN_KEY, TOKEN_EXPIRY_KEY]);
+}
+
+/**
+ * Full sign-out: removes JWT and session expiry.
  */
 export async function clearToken() {
   await chrome.storage.local.remove([TOKEN_KEY, TOKEN_EXPIRY_KEY, SESSION_UNTIL_KEY]);

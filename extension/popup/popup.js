@@ -9,7 +9,7 @@
  * 3. If valid token → call GET /api/today/ + GET /api/profile/ and render status.
  */
 
-import { getToken, clearToken } from "../utils/auth.js";
+import { getToken, clearToken, clearJwt } from "../utils/auth.js";
 import { fetchTodayProblem, fetchProfile, assignTodayProblem } from "../utils/api.js";
 
 const app = document.getElementById("app");
@@ -217,7 +217,7 @@ async function loadMain(token) {
   } catch (err) {
     const msg = err.message ?? "Unknown error";
     if (msg.includes("401") || msg.includes("403") || msg.toLowerCase().includes("unauthorized")) {
-      await clearToken();
+      await clearJwt();
       render(screenSignIn("Session expired — please open the web app and sign in again."));
     } else if (msg.includes("No problems")) {
       render(screenError("No problems in your pool yet.\nImport your LeetCode history in Settings."));
