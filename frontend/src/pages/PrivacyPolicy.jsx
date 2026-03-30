@@ -216,9 +216,8 @@ export default function PrivacyPolicy() {
 
         <Section title="Contact">
           <P>
-            Questions about this Privacy Policy or requests regarding your data can be submitted
-            via the contact form at{" "}
-            <a href="https://leetfocus.com">leetfocus.com</a>.
+            Questions about this Privacy Policy or requests regarding your data can be sent to{" "}
+            <a href="mailto:alextemnorod1@gmail.com">alextemnorod1@gmail.com</a>.
           </P>
         </Section>
 
