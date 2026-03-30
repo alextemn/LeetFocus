@@ -7,7 +7,7 @@
  * - SIGN_OUT: clears stored token
  */
 
-import { saveToken, getToken, clearToken, parseTokenExpiry } from "./utils/auth.js";
+import { saveToken, getToken, clearToken, parseTokenExpiry, isSessionActive } from "./utils/auth.js";
 import { verifyTodaySolved, fetchTodayProblem } from "./utils/api.js";
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -76,8 +76,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
   if (!url) return;
   if (!url.startsWith("http")) return;
 
-  const token = await getToken();
-  if (!token) return;
+  // Use 10-hour session for lock enforcement, not the short-lived JWT.
+  const sessionActive = await isSessionActive();
+  if (!sessionActive) return;
 
   const data = await chrome.storage.local.get([
     "lf_today_problem_url",
@@ -87,7 +88,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
 
   const today = new Date().toISOString().slice(0, 10);
   if (data.lf_today_date !== today) {
-    fetchAndCachePotd(token);
+    // Refresh cache only if we have a valid JWT — fails silently if expired.
+    const token = await getToken();
+    if (token) fetchAndCachePotd(token);
     return;
   }
 

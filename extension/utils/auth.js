@@ -6,6 +6,8 @@
 
 const TOKEN_KEY = "lf_clerk_token";
 const TOKEN_EXPIRY_KEY = "lf_clerk_token_expiry";
+const SESSION_UNTIL_KEY = "lf_session_until";
+const SESSION_DURATION_SECONDS = 10 * 60 * 60; // 10 hours
 
 /**
  * Save a Clerk JWT and its expiry timestamp to local storage.
@@ -13,10 +15,23 @@ const TOKEN_EXPIRY_KEY = "lf_clerk_token_expiry";
  * @param {number} expiresAt - Unix timestamp (seconds) when the token expires.
  */
 export async function saveToken(token, expiresAt) {
+  const sessionUntil = Math.floor(Date.now() / 1000) + SESSION_DURATION_SECONDS;
   await chrome.storage.local.set({
     [TOKEN_KEY]: token,
     [TOKEN_EXPIRY_KEY]: expiresAt,
+    [SESSION_UNTIL_KEY]: sessionUntil,
   });
+}
+
+/**
+ * Returns true if the user has an active 10-hour session, regardless of JWT expiry.
+ * Used for lock enforcement — does not require a valid JWT.
+ */
+export async function isSessionActive() {
+  const data = await chrome.storage.local.get([SESSION_UNTIL_KEY]);
+  const sessionUntil = data[SESSION_UNTIL_KEY];
+  if (!sessionUntil) return false;
+  return Math.floor(Date.now() / 1000) < sessionUntil;
 }
 
 /**
@@ -44,7 +59,7 @@ export async function getToken() {
  * Remove the stored token (sign-out).
  */
 export async function clearToken() {
-  await chrome.storage.local.remove([TOKEN_KEY, TOKEN_EXPIRY_KEY]);
+  await chrome.storage.local.remove([TOKEN_KEY, TOKEN_EXPIRY_KEY, SESSION_UNTIL_KEY]);
 }
 
 /**
