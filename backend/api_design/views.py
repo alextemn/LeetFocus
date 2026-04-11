@@ -341,7 +341,9 @@ class StripeWebhookView(APIView):
             profile = UserProfile.objects.filter(stripe_customer_id=customer_id).first()
             if profile:
                 profile.stripe_subscription_id = subscription_id
-                profile.save(update_fields=['stripe_subscription_id'])
+                profile.is_premium = True
+                profile.skips_remaining = 3
+                profile.save(update_fields=['stripe_subscription_id', 'is_premium', 'skips_remaining'])
 
         elif event_type in ('customer.subscription.created', 'customer.subscription.updated'):
             customer_id = obj.get('customer')
