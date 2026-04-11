@@ -118,6 +118,7 @@ export default function Settings() {
     setError(null);
     try {
       const res = await api.post("/stripe/checkout/");
+      console.log("Stripe checkout URL:", res.data.checkout_url);
       window.location.href = res.data.checkout_url;
     } catch {
       setError("Could not start checkout. Please try again.");
