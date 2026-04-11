@@ -116,11 +116,14 @@ export default function Settings() {
   async function handleUpgrade() {
     setCheckoutLoading(true);
     setError(null);
+    let checkoutUrl = null;
     try {
       const res = await api.post("/stripe/checkout/");
-      console.log("Stripe checkout URL:", res.data.checkout_url);
-      window.location.href = res.data.checkout_url;
-    } catch {
+      checkoutUrl = res.data.checkout_url;
+      console.log("Stripe checkout URL:", checkoutUrl);
+      window.location.href = checkoutUrl;
+    } catch (e) {
+      console.log("Stripe checkout failed. URL attempted:", checkoutUrl, "Error:", e);
       setError("Could not start checkout. Please try again.");
       setCheckoutLoading(false);
     }
