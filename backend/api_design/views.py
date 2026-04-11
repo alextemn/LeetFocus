@@ -4,7 +4,6 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from rest_framework.authentication import BaseAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,30 +14,14 @@ from .services.leetcode_checker import mark_solved
 from .services.problem_selector import get_daily_problem, get_or_assign_daily_problem, is_day_fully_solved
 
 
-class AuthTestView(APIView):
-    def get(self, request):
-        return Response({
-            'authenticated': True,
-            'clerk_id': request.user.username,
-            'email': request.user.email or '(not synced yet)',
-        })
-
-
 def _clerk_id(request):
     return request.user.username
 
 
 def _get_or_create_profile(request):
-    """
-    Return the UserProfile for the authenticated user, creating it if it
-    doesn't exist. Email comes from the Django User the JWT middleware populated.
-    Deletes any stale profile with the same email but a different clerk_id
-    (e.g. user deleted and recreated in Clerk with the same email).
-    """
     clerk_id = _clerk_id(request)
     email = request.user.email or ''
 
-    # Remove stale profile from a previous Clerk identity with the same email.
     if email:
         UserProfile.objects.filter(email=email).exclude(clerk_id=clerk_id).delete()
 
@@ -49,6 +32,19 @@ def _get_or_create_profile(request):
     return profile
 
 
+# ---------------------------------------------------------------------------
+# Auth
+# ---------------------------------------------------------------------------
+
+class AuthTestView(APIView):
+    def get(self, request):
+        return Response({
+            'authenticated': True,
+            'clerk_id': request.user.username,
+            'email': request.user.email or '(not synced yet)',
+        })
+
+
 class AuthSyncView(APIView):
     def post(self, request):
         clerk_id = _clerk_id(request)
@@ -57,7 +53,6 @@ class AuthSyncView(APIView):
         if not email:
             return Response({'error': 'email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Remove stale profile from a previous Clerk identity with the same email.
         UserProfile.objects.filter(email=email).exclude(clerk_id=clerk_id).delete()
 
         profile, created = UserProfile.objects.get_or_create(
@@ -73,6 +68,10 @@ class AuthSyncView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
+# ---------------------------------------------------------------------------
+# Profile
+# ---------------------------------------------------------------------------
+
 class ProfileView(APIView):
     def get(self, request):
         profile = _get_or_create_profile(request)
@@ -86,6 +85,10 @@ class ProfileView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# ---------------------------------------------------------------------------
+# Daily problem
+# ---------------------------------------------------------------------------
 
 class TodayProblemView(APIView):
     def get(self, request):
@@ -152,7 +155,6 @@ class VerifySolveView(APIView):
     def post(self, request):
         profile = _get_or_create_profile(request)
         today = timezone.now().date()
-
         problem_id = request.data.get('problem_id')
 
         if problem_id:
@@ -240,10 +242,9 @@ class ChangeProblemView(APIView):
         today = timezone.now().date()
 
         if profile.is_premium:
-            punishment_exists = DailyProblem.objects.filter(
+            if DailyProblem.objects.filter(
                 user=profile, assigned_date=today, is_punishment=True
-            ).exists()
-            if punishment_exists:
+            ).exists():
                 return Response(
                     {'error': 'Cannot change problem on a punishment day.'},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -272,6 +273,10 @@ class ChangeProblemView(APIView):
             )
         return Response(DailyProblemSerializer(new_daily).data)
 
+
+# ---------------------------------------------------------------------------
+# Stripe
+# ---------------------------------------------------------------------------
 
 class StripeCheckoutView(APIView):
     def post(self, request):
@@ -330,17 +335,16 @@ class StripeVerifySessionView(APIView):
         if session.payment_status != 'paid':
             return Response({'error': 'Payment not completed.'}, status=status.HTTP_402_PAYMENT_REQUIRED)
 
+        profile = _get_or_create_profile(request)
         customer_id = session.get('customer')
         subscription_id = session.get('subscription')
 
-        profile = _get_or_create_profile(request)
-
         if customer_id and profile.stripe_customer_id != customer_id:
-            return Response({'error': 'Session does not belong to this user.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {'error': 'Session does not belong to this user.'}, status=status.HTTP_403_FORBIDDEN
+            )
 
-        if subscription_id and not profile.stripe_subscription_id:
-            profile.stripe_subscription_id = subscription_id
-
+        profile.stripe_subscription_id = subscription_id
         profile.is_premium = True
         if not profile.skips_remaining:
             profile.skips_remaining = 3
@@ -372,7 +376,6 @@ class StripeWebhookView(APIView):
         if event_type == 'checkout.session.completed':
             customer_id = obj.get('customer')
             subscription_id = obj.get('subscription')
-
             profile = UserProfile.objects.filter(stripe_customer_id=customer_id).first()
             if profile:
                 profile.stripe_subscription_id = subscription_id
@@ -380,16 +383,15 @@ class StripeWebhookView(APIView):
                 profile.skips_remaining = 3
                 profile.save(update_fields=['stripe_subscription_id', 'is_premium', 'skips_remaining'])
 
-        elif event_type in ('customer.subscription.created', 'customer.subscription.updated'):
+        elif event_type in ('customer.subscription.updated', 'customer.subscription.created'):
             customer_id = obj.get('customer')
             subscription_id = obj.get('id')
-            status_value = obj.get('status')
+            sub_status = obj.get('status')
             cancel_at_period_end = obj.get('cancel_at_period_end', False)
-
             profile = UserProfile.objects.filter(stripe_customer_id=customer_id).first()
             if profile:
+                is_active = sub_status in ('active', 'trialing') and not cancel_at_period_end
                 profile.stripe_subscription_id = subscription_id
-                is_active = status_value in ('active', 'trialing') and not cancel_at_period_end
                 profile.is_premium = is_active
                 if not is_active:
                     profile.skips_remaining = 0
@@ -397,27 +399,24 @@ class StripeWebhookView(APIView):
 
         elif event_type in ('customer.subscription.deleted', 'customer.subscription.paused'):
             customer_id = obj.get('customer')
-
             profile = UserProfile.objects.filter(stripe_customer_id=customer_id).first()
             if profile:
                 profile.is_premium = False
                 profile.skips_remaining = 0
                 profile.save(update_fields=['is_premium', 'skips_remaining'])
 
-        elif event_type == 'invoice.payment_failed':
-            customer_id = obj.get('customer')
-
-            profile = UserProfile.objects.filter(stripe_customer_id=customer_id).first()
-            if profile:
-                profile.is_premium = False
-                profile.save(update_fields=['is_premium'])
-
         elif event_type == 'invoice.paid':
             customer_id = obj.get('customer')
-
             profile = UserProfile.objects.filter(stripe_customer_id=customer_id).first()
             if profile:
                 profile.is_premium = True
+                profile.save(update_fields=['is_premium'])
+
+        elif event_type == 'invoice.payment_failed':
+            customer_id = obj.get('customer')
+            profile = UserProfile.objects.filter(stripe_customer_id=customer_id).first()
+            if profile:
+                profile.is_premium = False
                 profile.save(update_fields=['is_premium'])
 
         return Response({'status': 'ok'})

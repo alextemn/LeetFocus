@@ -33,6 +33,8 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
+
+  // Stripe state
   const [upgradedBanner, setUpgradedBanner] = useState(false);
   const [activatingPro, setActivatingPro] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -58,22 +60,20 @@ export default function Settings() {
 
     async function init() {
       try {
-        if (justUpgraded) {
+        if (justUpgraded && sessionId) {
           setActivatingPro(true);
-
-          if (sessionId) {
-            // Direct verification — immediate, no webhook needed
-            await api.post("/stripe/verify-session/", { session_id: sessionId });
-            await loadProfile();
-          } else {
-            // Fallback: poll until webhook fires (up to 30s)
-            let data = await loadProfile();
-            let attempts = 0;
-            while (!data.is_premium && attempts < 30) {
-              await new Promise((r) => setTimeout(r, 1000));
-              data = await loadProfile();
-              attempts++;
-            }
+          await api.post("/stripe/verify-session/", { session_id: sessionId });
+          await loadProfile();
+          setActivatingPro(false);
+        } else if (justUpgraded) {
+          // Fallback: poll until webhook fires (up to 30s)
+          setActivatingPro(true);
+          let data = await loadProfile();
+          let attempts = 0;
+          while (!data.is_premium && attempts < 30) {
+            await new Promise((r) => setTimeout(r, 1000));
+            data = await loadProfile();
+            attempts++;
           }
           setActivatingPro(false);
         } else {
@@ -116,14 +116,13 @@ export default function Settings() {
   async function handleUpgrade() {
     setCheckoutLoading(true);
     setError(null);
-    let checkoutUrl = null;
     try {
       const res = await api.post("/stripe/checkout/");
-      checkoutUrl = res.data.checkout_url;
+      const checkoutUrl = res.data.checkout_url;
       console.log("Stripe checkout URL:", checkoutUrl);
       window.location.href = checkoutUrl;
     } catch (e) {
-      console.log("Stripe checkout failed. URL attempted:", checkoutUrl, "Error:", e);
+      console.error("Stripe checkout error:", e);
       setError("Could not start checkout. Please try again.");
       setCheckoutLoading(false);
     }
@@ -135,7 +134,8 @@ export default function Settings() {
     try {
       const res = await api.post("/stripe/portal/");
       window.location.href = res.data.portal_url;
-    } catch {
+    } catch (e) {
+      console.error("Stripe portal error:", e);
       setError("Could not open billing portal. Please try again.");
       setPortalLoading(false);
     }
@@ -156,14 +156,19 @@ export default function Settings() {
       `}</style>
 
       <div style={{ padding: "32px 28px", maxWidth: 480, margin: "0 auto" }}>
+
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40 }}>
-          <button onClick={() => navigate("/dashboard")} style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted, background: "none", border: "none", cursor: "pointer" }}>
+          <button
+            onClick={() => navigate("/dashboard")}
+            style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted, background: "none", border: "none", cursor: "pointer" }}
+          >
             ← dashboard
           </button>
           <div style={{ fontFamily: MONO, fontSize: 13, letterSpacing: 3, color: C.textMuted }}>settings</div>
         </div>
 
+        {/* Banners */}
         {activatingPro && (
           <div style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted, marginBottom: 20, padding: "10px 14px", background: C.surface, borderRadius: 4, border: `0.5px solid ${C.border}` }}>
             activating pro...
@@ -174,7 +179,6 @@ export default function Settings() {
             welcome to pro — all features unlocked ✓
           </div>
         )}
-
         {error && (
           <div style={{ fontFamily: MONO, fontSize: 11, color: "#E57373", marginBottom: 20, padding: "10px 14px", background: "rgba(229,115,115,0.08)", borderRadius: 4 }}>
             {error}
@@ -195,40 +199,44 @@ export default function Settings() {
         </div>
 
         {/* Subscription */}
-        {isPro ? (
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, color: C.textMuted, marginBottom: 12, textTransform: "uppercase" }}>subscription</div>
-            <div style={{ background: C.surface, borderRadius: 6, padding: "16px 18px", border: `0.5px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontFamily: MONO, fontSize: 12, color: C.solved, marginBottom: 2 }}>pro — active</div>
-                <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted }}>all difficulties · adaptive selection · streak tracking · topic filters · 3 skips/month</div>
+        <div style={{ marginBottom: 32 }}>
+          {isPro ? (
+            <>
+              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, color: C.textMuted, marginBottom: 12, textTransform: "uppercase" }}>subscription</div>
+              <div style={{ background: C.surface, borderRadius: 6, padding: "16px 18px", border: `0.5px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontFamily: MONO, fontSize: 12, color: C.solved, marginBottom: 4 }}>pro — active</div>
+                  <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted }}>
+                    all difficulties · adaptive selection · streak tracking · topic filters · 3 skips/month
+                  </div>
+                </div>
+                <button
+                  onClick={handleManageSubscription}
+                  disabled={portalLoading}
+                  style={{ fontFamily: MONO, fontSize: 10, color: C.steel, background: "none", border: `0.5px solid ${C.steel}`, borderRadius: 4, padding: "6px 12px", cursor: portalLoading ? "default" : "pointer", opacity: portalLoading ? 0.5 : 1, whiteSpace: "nowrap", marginLeft: 16 }}
+                >
+                  {portalLoading ? "loading..." : "manage"}
+                </button>
               </div>
-              <button
-                onClick={handleManageSubscription}
-                disabled={portalLoading}
-                style={{ fontFamily: MONO, fontSize: 10, color: C.steel, background: "none", border: `0.5px solid ${C.steel}`, borderRadius: 4, padding: "6px 12px", cursor: portalLoading ? "default" : "pointer", opacity: portalLoading ? 0.5 : 1, whiteSpace: "nowrap" }}
-              >
-                {portalLoading ? "loading..." : "manage"}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div style={{ marginBottom: 32 }}>
-            <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, color: C.textMuted, marginBottom: 12, textTransform: "uppercase" }}>upgrade to pro — $10/mo</div>
-            <div style={{ background: C.surface, borderRadius: 6, padding: "16px 18px", border: `0.5px solid ${C.border}` }}>
-              <div style={{ fontFamily: MONO, fontSize: 11, color: C.textSecondary, marginBottom: 10, lineHeight: 1.6 }}>
-                all difficulties · adaptive selection · streak tracking · topic filters · 3 skips/month
+            </>
+          ) : (
+            <>
+              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, color: C.textMuted, marginBottom: 12, textTransform: "uppercase" }}>upgrade to pro — $10/mo</div>
+              <div style={{ background: C.surface, borderRadius: 6, padding: "16px 18px", border: `0.5px solid ${C.border}` }}>
+                <div style={{ fontFamily: MONO, fontSize: 11, color: C.textSecondary, marginBottom: 12, lineHeight: 1.6 }}>
+                  all difficulties · adaptive selection · streak tracking · topic filters · 3 skips/month
+                </div>
+                <button
+                  onClick={handleUpgrade}
+                  disabled={checkoutLoading}
+                  style={{ fontFamily: MONO, fontSize: 11, color: C.void, background: C.steel, border: "none", borderRadius: 4, padding: "8px 16px", cursor: checkoutLoading ? "default" : "pointer", opacity: checkoutLoading ? 0.5 : 1 }}
+                >
+                  {checkoutLoading ? "loading..." : "upgrade →"}
+                </button>
               </div>
-              <button
-                onClick={handleUpgrade}
-                disabled={checkoutLoading}
-                style={{ fontFamily: MONO, fontSize: 11, color: C.void, background: C.steel, border: "none", borderRadius: 4, padding: "8px 16px", cursor: checkoutLoading ? "default" : "pointer", opacity: checkoutLoading ? 0.5 : 1 }}
-              >
-                {checkoutLoading ? "loading..." : "upgrade →"}
-              </button>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         {/* Difficulty */}
         <div style={{ marginBottom: 32 }}>
@@ -287,6 +295,7 @@ export default function Settings() {
           </div>
         )}
 
+        {/* Save */}
         <button
           onClick={handleSave}
           disabled={saving || !hasChanges}
@@ -312,6 +321,7 @@ export default function Settings() {
             sign out
           </button>
         </div>
+
       </div>
     </div>
   );
