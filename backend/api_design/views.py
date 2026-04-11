@@ -336,8 +336,8 @@ class StripeVerifySessionView(APIView):
             return Response({'error': 'Payment not completed.'}, status=status.HTTP_402_PAYMENT_REQUIRED)
 
         profile = _get_or_create_profile(request)
-        customer_id = session.get('customer')
-        subscription_id = session.get('subscription')
+        customer_id = session.customer
+        subscription_id = session.subscription
 
         if customer_id and profile.stripe_customer_id != customer_id:
             return Response(
