@@ -288,7 +288,7 @@ class StripeCheckoutView(APIView):
             payment_method_types=['card'],
             line_items=[{'price': settings.STRIPE_PRO_PRICE_ID, 'quantity': 1}],
             mode='subscription',
-            success_url=f"{settings.FRONTEND_URL}/settings?upgraded=true",
+            success_url=f"{settings.FRONTEND_URL}/settings?upgraded=true&session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{settings.FRONTEND_URL}/settings",
         )
 
@@ -312,6 +312,41 @@ class StripePortalView(APIView):
         )
 
         return Response({'portal_url': portal_session.url})
+
+
+class StripeVerifySessionView(APIView):
+    def post(self, request):
+        session_id = request.data.get('session_id')
+        if not session_id:
+            return Response({'error': 'session_id required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+        except stripe.error.InvalidRequestError:
+            return Response({'error': 'Invalid session.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if session.payment_status != 'paid':
+            return Response({'error': 'Payment not completed.'}, status=status.HTTP_402_PAYMENT_REQUIRED)
+
+        customer_id = session.get('customer')
+        subscription_id = session.get('subscription')
+
+        profile = _get_or_create_profile(request)
+
+        if customer_id and profile.stripe_customer_id != customer_id:
+            return Response({'error': 'Session does not belong to this user.'}, status=status.HTTP_403_FORBIDDEN)
+
+        if subscription_id and not profile.stripe_subscription_id:
+            profile.stripe_subscription_id = subscription_id
+
+        profile.is_premium = True
+        if not profile.skips_remaining:
+            profile.skips_remaining = 3
+        profile.save(update_fields=['stripe_subscription_id', 'is_premium', 'skips_remaining'])
+
+        return Response({'status': 'ok'})
 
 
 @method_decorator(csrf_exempt, name='dispatch')

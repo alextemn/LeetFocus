@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     AuthSyncView, AuthTestView, ChangeProblemView, ProfileView,
-    SkipDayView, StripeCheckoutView, StripePortalView,
+    SkipDayView, StripeCheckoutView, StripePortalView, StripeVerifySessionView,
     StripeWebhookView, TodayAssignView, TodayProblemView, TodayStatusView, VerifySolveView,
 )
 
@@ -17,6 +17,6 @@ urlpatterns = [
     path('today/change/', ChangeProblemView.as_view(), name='change-problem'),
     path('stripe/checkout/', StripeCheckoutView.as_view(), name='stripe-checkout'),
     path('stripe/portal/', StripePortalView.as_view(), name='stripe-portal'),
-    #path('stripe/verify-session/', StripeVerifySessionView.as_view(), name='stripe-verify-session'),
+    path('stripe/verify-session/', StripeVerifySessionView.as_view(), name='stripe-verify-session'),
     path('stripe/webhook/', StripeWebhookView.as_view(), name='stripe-webhook'),
 ]
