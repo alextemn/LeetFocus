@@ -66,7 +66,7 @@ function isAllowedUrl(url, potdUrl) {
   return (
     url.startsWith("https://leetfocus.com") ||
     url.startsWith("https://www.leetfocus.com") ||
-    url.startsWith("https://leetfocus-production.up.railway.app") ||
+    url.startsWith("https://leetfocus-production-258d.up.railway.app") ||
     url.startsWith(potdUrl)
   );
 }

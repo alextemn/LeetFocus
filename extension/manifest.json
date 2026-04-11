@@ -10,7 +10,7 @@
   ],
 
   "host_permissions": [
-    "https://leetfocus-production.up.railway.app/*",
+    "https://leetfocus-production-258d.up.railway.app/*",
     "https://leetfocus.com/*",
     "https://www.leetfocus.com/*",
     "https://leetcode.com/problems/*",
