@@ -293,6 +293,7 @@ class StripeCheckoutView(APIView):
             payment_method_types=['card'],
             line_items=[{'price': settings.STRIPE_PRO_PRICE_ID, 'quantity': 1}],
             mode='subscription',
+            subscription_data={'trial_period_days': 7},
             success_url=f"{settings.FRONTEND_URL}/settings?upgraded=true&session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{settings.FRONTEND_URL}/settings",
         )
@@ -332,7 +333,7 @@ class StripeVerifySessionView(APIView):
         except stripe.error.InvalidRequestError:
             return Response({'error': 'Invalid session.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if session.payment_status != 'paid':
+        if session.payment_status not in ('paid', 'no_payment_required'):
             return Response({'error': 'Payment not completed.'}, status=status.HTTP_402_PAYMENT_REQUIRED)
 
         profile = _get_or_create_profile(request)
