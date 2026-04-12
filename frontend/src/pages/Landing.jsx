@@ -136,6 +136,10 @@ function Hero({ onSignIn }) {
             Start free trial →
           </button>
           <span style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted }}>7 days free, then $10/mo</span>
+          <a href="https://chromewebstore.google.com/detail/kdnfaakigncmcencjcbakjpadjgllebe?utm_source=item-share-cb" target="_blank" rel="noreferrer" style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, textDecoration: "none", display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="21.17" y1="8" x2="12" y2="8"/><line x1="3.95" y1="6.06" x2="8.54" y2="14"/><line x1="10.88" y1="21.94" x2="15.46" y2="14"/></svg>
+            download chrome extension
+          </a>
         </div>
       </FadeIn>
       <FadeIn delay={0.4}>
@@ -168,7 +172,7 @@ function Hero({ onSignIn }) {
 function HowItWorks() {
   const steps = [
     { num: "01", title: "Create an account", desc: "Sign up and start your 7-day free trial. No charge until the trial ends — cancel anytime." },
-    { num: "02", title: "Install the extension", desc: "Add LeetFocus to Chrome. Every morning, one problem is assigned based on your difficulty." },
+    { num: "02", title: "Install the extension", desc: "Add LeetFocus to Chrome. Every morning, one problem is assigned based on your difficulty.", link: "https://chromewebstore.google.com/detail/kdnfaakigncmcencjcbakjpadjgllebe?utm_source=item-share-cb" },
     { num: "03", title: "Try to go anywhere else", desc: "YouTube, Twitter, Reddit — every tab redirects to your problem. There's no override." },
     { num: "04", title: "Solve it. Get your browser back.", desc: "Submit a passing solution on LeetCode. The lock lifts instantly. That's it." },
   ];
@@ -180,7 +184,11 @@ function HowItWorks() {
           <div style={{ display: "flex", gap: 20, padding: "24px 0", borderTop: i === 0 ? `0.5px solid ${C.border}` : "none", borderBottom: `0.5px solid ${C.border}` }}>
             <div style={{ fontFamily: MONO, fontSize: 11, color: C.steel, minWidth: 24, paddingTop: 2 }}>{step.num}</div>
             <div>
-              <div style={{ fontFamily: SANS, fontSize: 15, fontWeight: 500, color: C.textPrimary, marginBottom: 4 }}>{step.title}</div>
+              {step.link ? (
+                <a href={step.link} target="_blank" rel="noreferrer" style={{ fontFamily: SANS, fontSize: 15, fontWeight: 500, color: C.steelMed, marginBottom: 4, display: "block", textDecoration: "none" }}>{step.title} ↗</a>
+              ) : (
+                <div style={{ fontFamily: SANS, fontSize: 15, fontWeight: 500, color: C.textPrimary, marginBottom: 4 }}>{step.title}</div>
+              )}
               <div style={{ fontFamily: SANS, fontSize: 13, color: C.textSecondary, lineHeight: 1.55 }}>{step.desc}</div>
             </div>
           </div>

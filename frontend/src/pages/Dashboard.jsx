@@ -357,12 +357,22 @@ export default function Dashboard() {
             <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted }}>
               difficulty: <span style={{ color: C.steelMed }}>{profile.difficulty_preference}</span>
             </div>
-            <button
-              onClick={() => navigate("/settings")}
-              style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
-            >
-              settings
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <a
+                href="https://chromewebstore.google.com/detail/kdnfaakigncmcencjcbakjpadjgllebe?utm_source=item-share-cb"
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, textDecoration: "underline" }}
+              >
+                get extension
+              </a>
+              <button
+                onClick={() => navigate("/settings")}
+                style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+              >
+                settings
+              </button>
+            </div>
           </div>
         )}
       </div>
