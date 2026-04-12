@@ -193,7 +193,7 @@ function HowItWorks() {
 function Pricing({ onSignIn }) {
   return (
     <section id="pricing" style={{ padding: "80px 32px", maxWidth: 640, margin: "0 auto", position: "relative", zIndex: 2 }}>
-      <FadeIn><div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: C.textMuted, textTransform: "uppercase", marginBottom: 32 }}>pricing</div></FadeIn>
+      <FadeIn><div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: C.textMuted, textTransform: "uppercase", marginBottom: 32, textAlign: "center" }}>pricing</div></FadeIn>
       <FadeIn delay={0.08}>
         <div style={{ background: C.surface, borderRadius: 6, padding: "28px 28px", border: `0.5px solid ${C.steel}`, position: "relative", overflow: "hidden", maxWidth: 400, margin: "0 auto" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${C.steel}, transparent)` }} />
