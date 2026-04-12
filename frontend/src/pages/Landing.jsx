@@ -102,7 +102,7 @@ function Nav({ onSignIn }) {
         <a href="#pricing" style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted, textDecoration: "none" }}>pricing</a>
         <a href="/sign-in" style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted, textDecoration: "none" }}>sign in</a>
         <button onClick={onSignIn} style={{ background: C.steel, color: C.void, border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: MONO, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>
-          Get started
+          Start free trial
         </button>
       </div>
     </nav>
@@ -133,9 +133,9 @@ function Hero({ onSignIn }) {
       <FadeIn delay={0.3}>
         <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 52 }}>
           <button onClick={onSignIn} style={{ background: C.steel, color: C.void, border: "none", borderRadius: 4, padding: "11px 28px", fontFamily: MONO, fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
-            Start locking →
+            Start free trial →
           </button>
-          <span style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted }}>free plan available</span>
+          <span style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted }}>7 days free, then $10/mo</span>
         </div>
       </FadeIn>
       <FadeIn delay={0.4}>
@@ -167,8 +167,8 @@ function Hero({ onSignIn }) {
 
 function HowItWorks() {
   const steps = [
-    { num: "01", title: "Install the extension", desc: "Add LeetFocus to Chrome. Sign in. Pick your difficulty and daily schedule." },
-    { num: "02", title: "Open your browser", desc: "Every morning, LeetFocus assigns you one problem based on your weak areas." },
+    { num: "01", title: "Create an account", desc: "Sign up and start your 7-day free trial. No charge until the trial ends — cancel anytime." },
+    { num: "02", title: "Install the extension", desc: "Add LeetFocus to Chrome. Every morning, one problem is assigned based on your difficulty." },
     { num: "03", title: "Try to go anywhere else", desc: "YouTube, Twitter, Reddit — every tab redirects to your problem. There's no override." },
     { num: "04", title: "Solve it. Get your browser back.", desc: "Submit a passing solution on LeetCode. The lock lifts instantly. That's it." },
   ];
@@ -195,35 +195,32 @@ function Pricing({ onSignIn }) {
     <section id="pricing" style={{ padding: "80px 32px", maxWidth: 640, margin: "0 auto", position: "relative", zIndex: 2 }}>
       <FadeIn><div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: C.textMuted, textTransform: "uppercase", marginBottom: 32 }}>pricing</div></FadeIn>
       <FadeIn delay={0.08}>
-        <div style={{ display: "flex", gap: 12 }}>
-          <div style={{ flex: 1, background: C.surface, borderRadius: 6, padding: "24px 22px", border: `0.5px solid ${C.border}` }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted, marginBottom: 16 }}>free</div>
-            <div style={{ fontFamily: SANS, fontSize: 28, fontWeight: 500, color: C.textPrimary, marginBottom: 4 }}>$0</div>
-            <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, marginBottom: 20 }}>forever</div>
-            {["1 problem per day", "Easy + Medium difficulties", "Browser focus redirect", "Basic progress tracking"].map((f) => (
-              <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 3, height: 3, borderRadius: "50%", background: C.textMuted }} />
-                <span style={{ fontFamily: SANS, fontSize: 12, color: C.textSecondary }}>{f}</span>
-              </div>
-            ))}
+        <div style={{ background: C.surface, borderRadius: 6, padding: "28px 28px", border: `0.5px solid ${C.steel}`, position: "relative", overflow: "hidden", maxWidth: 400 }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${C.steel}, transparent)` }} />
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+            <span style={{ fontFamily: SANS, fontSize: 28, fontWeight: 500, color: C.textPrimary }}>$10</span>
+            <span style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted }}>/mo</span>
           </div>
-          <div style={{ flex: 1, background: C.surface, borderRadius: 6, padding: "24px 22px", border: `0.5px solid ${C.steel}`, position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${C.steel}, transparent)` }} />
-            <div style={{ fontFamily: MONO, fontSize: 11, color: C.steel, marginBottom: 16 }}>pro</div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-              <span style={{ fontFamily: SANS, fontSize: 28, fontWeight: 500, color: C.textPrimary }}>$10</span>
-              <span style={{ fontFamily: MONO, fontSize: 11, color: C.textMuted }}>/mo</span>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: C.solved, marginBottom: 20 }}>7-day free trial — cancel anytime</div>
+          {[
+            "Daily problem assigned at midnight",
+            "Browser locked until it's solved",
+            "All difficulty levels including Hard",
+            "Adaptive problem selection",
+            "Streak tracking & analytics",
+            "Topic filters",
+            "3 skips per month",
+          ].map((f) => (
+            <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div style={{ width: 3, height: 3, borderRadius: "50%", background: C.steel }} />
+              <span style={{ fontFamily: SANS, fontSize: 12, color: C.textSecondary }}>{f}</span>
             </div>
-            <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, marginBottom: 20 }}>billed monthly</div>
-            {["All difficulty levels (Hard)", "Adaptive problem selection", "Weak area targeting", "Streak analytics", "Topic filters", "3 skips per month", "Schedule customization"].map((f) => (
-              <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 3, height: 3, borderRadius: "50%", background: C.steel }} />
-                <span style={{ fontFamily: SANS, fontSize: 12, color: C.textSecondary }}>{f}</span>
-              </div>
-            ))}
-            <button onClick={onSignIn} style={{ width: "100%", marginTop: 16, background: C.steel, color: C.void, border: "none", borderRadius: 4, padding: "9px 0", fontFamily: MONO, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>
-              get started →
-            </button>
+          ))}
+          <button onClick={onSignIn} style={{ width: "100%", marginTop: 20, background: C.steel, color: C.void, border: "none", borderRadius: 4, padding: "10px 0", fontFamily: MONO, fontSize: 11, fontWeight: 500, cursor: "pointer" }}>
+            start free trial →
+          </button>
+          <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, textAlign: "center", marginTop: 10 }}>
+            no charge for 7 days · then $10/month
           </div>
         </div>
       </FadeIn>
