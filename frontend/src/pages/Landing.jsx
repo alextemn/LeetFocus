@@ -131,7 +131,7 @@ function Hero({ onSignIn }) {
         </p>
       </FadeIn>
       <FadeIn delay={0.3}>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 52 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginBottom: 52 }}>
           <button onClick={onSignIn} style={{ background: C.steel, color: C.void, border: "none", borderRadius: 4, padding: "11px 28px", fontFamily: MONO, fontSize: 12, fontWeight: 500, cursor: "pointer" }}>
             Start free trial →
           </button>
@@ -195,7 +195,7 @@ function Pricing({ onSignIn }) {
     <section id="pricing" style={{ padding: "80px 32px", maxWidth: 640, margin: "0 auto", position: "relative", zIndex: 2 }}>
       <FadeIn><div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: C.textMuted, textTransform: "uppercase", marginBottom: 32 }}>pricing</div></FadeIn>
       <FadeIn delay={0.08}>
-        <div style={{ background: C.surface, borderRadius: 6, padding: "28px 28px", border: `0.5px solid ${C.steel}`, position: "relative", overflow: "hidden", maxWidth: 400 }}>
+        <div style={{ background: C.surface, borderRadius: 6, padding: "28px 28px", border: `0.5px solid ${C.steel}`, position: "relative", overflow: "hidden", maxWidth: 400, margin: "0 auto" }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${C.steel}, transparent)` }} />
           <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
             <span style={{ fontFamily: SANS, fontSize: 28, fontWeight: 500, color: C.textPrimary }}>$10</span>
