@@ -221,7 +221,7 @@ export default function Settings() {
             </>
           ) : (
             <>
-              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, color: C.textMuted, marginBottom: 12, textTransform: "uppercase" }}>upgrade to pro — 7-day free trial, then $10/mo</div>
+              <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, color: C.textMuted, marginBottom: 12, textTransform: "uppercase" }}>7-day free trial — then $10/mo</div>
               <div style={{ background: C.surface, borderRadius: 6, padding: "16px 18px", border: `0.5px solid ${C.border}` }}>
                 <div style={{ fontFamily: MONO, fontSize: 11, color: C.textSecondary, marginBottom: 12, lineHeight: 1.6 }}>
                   all difficulties · adaptive selection · streak tracking · topic filters · 3 skips/month

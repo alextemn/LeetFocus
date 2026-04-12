@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [skipping, setSkipping] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const timerStart = useRef(0);
 
   useEffect(() => {
@@ -70,6 +71,19 @@ export default function Dashboard() {
     load();
   }, []);
 
+  async function handleUpgrade() {
+    setCheckoutLoading(true);
+    setError(null);
+    try {
+      const res = await api.post("/stripe/checkout/");
+      window.location.href = res.data.checkout_url;
+    } catch (e) {
+      console.error("Stripe checkout error:", e);
+      setError("Could not start checkout. Please try again.");
+      setCheckoutLoading(false);
+    }
+  }
+
   async function handleChange() {
     setChanging(true);
     setError(null);
@@ -95,7 +109,6 @@ export default function Dashboard() {
       } else {
         setPrimary(updated);
       }
-      // Refresh status to update day_fully_solved / streak
       const statusRes = await api.get("/today/status/");
       const s = statusRes.data;
       setDayFullySolved(s.day_fully_solved);
@@ -159,6 +172,77 @@ export default function Dashboard() {
     );
   }
 
+  // Paywall — shown to users who haven't started a trial/subscription yet
+  if (!isPro) {
+    return (
+      <div style={{ background: C.void, minHeight: "100vh", color: C.textPrimary }}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          button:hover { opacity: 0.88; }
+        `}</style>
+        <div style={{ padding: "32px 28px", maxWidth: 480, margin: "0 auto" }}>
+
+          {/* Header */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 64 }}>
+            <div style={{ fontFamily: MONO, fontSize: 13, letterSpacing: 3, color: C.textMuted }}>leetfocus</div>
+            <button
+              onClick={() => navigate("/settings")}
+              style={{ width: 28, height: 28, borderRadius: 4, background: C.elevated, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: C.textSecondary, fontFamily: MONO, border: "none", cursor: "pointer" }}
+            >
+              {initials}
+            </button>
+          </div>
+
+          {/* CTA */}
+          <div style={{ marginBottom: 40 }}>
+            <div style={{ fontFamily: MONO, fontSize: 22, color: C.textPrimary, marginBottom: 12, letterSpacing: -0.5 }}>
+              stay focused.
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 13, color: C.textSecondary, lineHeight: 1.7, marginBottom: 32 }}>
+              one problem a day. browser locked until you solve it.
+            </div>
+
+            <div style={{ background: C.surface, borderRadius: 6, padding: "20px", border: `0.5px solid ${C.border}`, marginBottom: 24 }}>
+              <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>what you get</div>
+              {[
+                "daily problem assigned at midnight",
+                "browser locked until it's solved",
+                "adaptive difficulty selection",
+                "streak tracking",
+                "topic filters",
+                "3 skips per month",
+              ].map((feature) => (
+                <div key={feature} style={{ fontFamily: MONO, fontSize: 11, color: C.textSecondary, marginBottom: 8, display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ color: C.solved }}>→</span> {feature}
+                </div>
+              ))}
+            </div>
+
+            {error && (
+              <div style={{ fontFamily: MONO, fontSize: 11, color: "#E57373", marginBottom: 16, padding: "10px 14px", background: "rgba(229,115,115,0.08)", borderRadius: 4 }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleUpgrade}
+              disabled={checkoutLoading}
+              style={{ width: "100%", padding: "12px 0", borderRadius: 4, background: C.steel, color: C.void, border: "none", fontFamily: MONO, fontSize: 12, cursor: checkoutLoading ? "default" : "pointer", opacity: checkoutLoading ? 0.6 : 1 }}
+            >
+              {checkoutLoading ? "loading..." : "start free trial →"}
+            </button>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: C.textMuted, textAlign: "center", marginTop: 10 }}>
+              7 days free, then $10/month — cancel anytime
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // Main dashboard — pro users only
   return (
     <div style={{ background: C.void, minHeight: "100vh", color: C.textPrimary }}>
       <style>{`
